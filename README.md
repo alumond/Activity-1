@@ -105,15 +105,21 @@ TELEGRAM_BOT_TOKEN
 TELEGRAM_WEBHOOK_SECRET
 GEMINI_API_KEY
 GEMINI_MODEL
-KV_REST_API_URL
-KV_REST_API_TOKEN
 ```
 
 Use `gemini-3.5-flash-lite` for `GEMINI_MODEL` unless you intentionally choose
 another Gemini model.
 
-4. Create a Vercel KV or Upstash Redis database and copy the REST URL/token into
-`KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+4. Optional: create a Vercel KV or Upstash Redis database for recent-message
+memory, then add:
+
+```text
+KV_REST_API_URL
+KV_REST_API_TOKEN
+```
+
+Without these two values, the Telegram bot still works, but each message is
+answered without stored conversation history.
 
 5. Register the Telegram webhook after Vercel deploys:
 
@@ -123,7 +129,8 @@ curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://yo
 
 6. Send `/start` to your Telegram bot, then send a symptom question.
 
-The Telegram bot keeps only recent message context in KV with a seven-day TTL.
+When KV is configured, the Telegram bot keeps only recent message context with a
+seven-day TTL.
 
 ## Medical Safety
 

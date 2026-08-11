@@ -1,7 +1,8 @@
-import json
+import os
 import unittest
+from unittest.mock import patch
 
-from api.telegram import get_chat_id_and_text, split_telegram_message, webhook_registration_url
+from api.telegram import get_chat_id_and_text, required_config_present, split_telegram_message, webhook_registration_url
 from gemini_client import build_prompt
 
 
@@ -41,6 +42,15 @@ class TelegramBotTests(unittest.TestCase):
         self.assertIn("https://api.telegram.org/bot123:abc/setWebhook", url)
         self.assertIn("url=https%3A%2F%2Fexample.vercel.app%2Fapi%2Ftelegram", url)
         self.assertIn("secret_token=secret%20value", url)
+
+    def test_required_config_does_not_require_kv(self):
+        fake_env = {
+            "TELEGRAM_BOT_TOKEN": "telegram-token",
+            "TELEGRAM_WEBHOOK_SECRET": "webhook-secret",
+            "GEMINI_API_KEY": "gemini-key",
+        }
+        with patch.dict(os.environ, fake_env, clear=True):
+            self.assertTrue(required_config_present())
 
 
 if __name__ == "__main__":

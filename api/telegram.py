@@ -175,8 +175,6 @@ def required_config_present() -> bool:
         "TELEGRAM_BOT_TOKEN",
         "TELEGRAM_WEBHOOK_SECRET",
         "GEMINI_API_KEY",
-        "KV_REST_API_URL",
-        "KV_REST_API_TOKEN",
     ]
     return all(env(name) for name in required)
 
