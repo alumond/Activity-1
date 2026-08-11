@@ -109,31 +109,6 @@ def apply_theme() -> None:
             margin-top: 1rem;
         }
 
-        .metric-row {
-            display: grid;
-            gap: .75rem;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            margin: 1rem 0 1.25rem;
-        }
-
-        .metric {
-            background: rgba(21, 31, 43, .78);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: .85rem .95rem;
-        }
-
-        .metric span {
-            color: var(--muted);
-            display: block;
-            font-size: .78rem;
-            margin-bottom: .25rem;
-        }
-
-        .metric strong {
-            font-size: .95rem;
-        }
-
         .example-grid {
             display: grid;
             gap: .7rem;
@@ -182,7 +157,6 @@ def apply_theme() -> None:
         }
 
         @media (max-width: 760px) {
-            .metric-row,
             .example-grid {
                 grid-template-columns: 1fr;
             }
@@ -330,17 +304,6 @@ def main() -> None:
             "secrets or environment variables."
         )
         st.stop()
-
-    st.markdown(
-        f"""
-        <div class="metric-row">
-            <div class="metric"><span>Mode</span><strong>Clinical guidance</strong></div>
-            <div class="metric"><span>Response</span><strong>{response_depth}</strong></div>
-            <div class="metric"><span>Safety</span><strong>Urgent symptoms flagged</strong></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
     if not st.session_state.messages:
         st.markdown('<div class="workspace">', unsafe_allow_html=True)
