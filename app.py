@@ -249,7 +249,7 @@ def call_gemini(
 
 
 def main() -> None:
-    st.set_page_config(page_title="AfriMedQA Chatbot", layout="centered")
+    st.set_page_config(page_title="Health Bot for All", layout="centered")
     apply_theme()
 
     gemini_api_key = get_secret("GEMINI_API_KEY")
@@ -283,7 +283,7 @@ def main() -> None:
         """
         <section class="hero">
             <div class="eyebrow">AfriMedQA assistant</div>
-            <h1>AfriMedQA Clinical Chatbot</h1>
+            <h1>Health Bot for All</h1>
             <p>
                 A polished health guidance workspace for African healthcare contexts,
                 built to surface urgency, next steps, and warning signs with clarity.
