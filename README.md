@@ -7,6 +7,8 @@ fine-tuning pipeline and a Streamlit chatbot UI backed by the Gemini API.
 
 - `finetune_llm.py`: training and data-preview pipeline for AfriMedQA.
 - `app.py`: Streamlit chatbot that calls Gemini API.
+- `api/telegram.py`: separate Telegram webhook for Vercel.
+- `gemini_client.py`: shared Gemini prompt and API helper used by the Telegram bot.
 - `FInetune_LLm.ipynb`: cleaned Colab notebook version of the same workflow.
 - `requirements.txt`: lightweight dependencies for Streamlit Cloud.
 - `requirements-train.txt`: Colab/GPU dependencies for fine-tuning.
@@ -80,6 +82,48 @@ variables named `GEMINI_API_KEY` and `GEMINI_MODEL`.
 2. Create a Streamlit Community Cloud app pointing to `app.py`.
 3. Add `GEMINI_API_KEY` and optional `GEMINI_MODEL` in app secrets.
 4. Deploy.
+
+## Telegram Bot on Vercel
+
+The Telegram bot is separate from the Streamlit app. Streamlit continues to use
+`app.py`; Vercel only serves the Telegram webhook at `api/telegram.py`.
+
+1. In Telegram, open BotFather and create a bot:
+
+```text
+/newbot
+```
+
+Copy the bot token.
+
+2. Deploy this GitHub repo to Vercel.
+
+3. Add these environment variables in Vercel:
+
+```text
+TELEGRAM_BOT_TOKEN
+TELEGRAM_WEBHOOK_SECRET
+GEMINI_API_KEY
+GEMINI_MODEL
+KV_REST_API_URL
+KV_REST_API_TOKEN
+```
+
+Use `gemini-3.5-flash-lite` for `GEMINI_MODEL` unless you intentionally choose
+another Gemini model.
+
+4. Create a Vercel KV or Upstash Redis database and copy the REST URL/token into
+`KV_REST_API_URL` and `KV_REST_API_TOKEN`.
+
+5. Register the Telegram webhook after Vercel deploys:
+
+```bash
+curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://your-vercel-domain.vercel.app/api/telegram&secret_token=<TELEGRAM_WEBHOOK_SECRET>"
+```
+
+6. Send `/start` to your Telegram bot, then send a symptom question.
+
+The Telegram bot keeps only recent message context in KV with a seven-day TTL.
 
 ## Medical Safety
 
