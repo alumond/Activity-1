@@ -1,14 +1,15 @@
 # AfriMedQA Llama Fine-Tuning Pipeline
 
 This project turns the original Colab notebook export into a Colab-first QLoRA
-fine-tuning pipeline and a Streamlit chatbot UI.
+fine-tuning pipeline and a Streamlit chatbot UI backed by the Gemini API.
 
 ## What This Contains
 
 - `finetune_llm.py`: training and data-preview pipeline for AfriMedQA.
-- `app.py`: Streamlit chatbot that calls an external Hugging Face inference endpoint.
+- `app.py`: Streamlit chatbot that calls Gemini API.
 - `FInetune_LLm.ipynb`: cleaned Colab notebook version of the same workflow.
-- `requirements.txt`: dependencies for Colab training and Streamlit app execution.
+- `requirements.txt`: lightweight dependencies for Streamlit Cloud.
+- `requirements-train.txt`: Colab/GPU dependencies for fine-tuning.
 - `.streamlit/secrets.toml.example`: required Streamlit secrets.
 
 ## Training in Colab
@@ -18,7 +19,7 @@ fine-tuning pipeline and a Streamlit chatbot UI.
 3. Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements-train.txt
 ```
 
 4. Authenticate with Hugging Face:
@@ -52,17 +53,16 @@ The final LoRA adapter is saved to:
 outputs/final_adapter
 ```
 
-## Hugging Face Endpoint
+## Gemini API for Streamlit
 
-Streamlit Community Cloud should host the UI only. Deploy the fine-tuned model
-or adapter through Hugging Face infrastructure, then copy the endpoint URL into
-Streamlit secrets.
+The hosted Streamlit app uses Gemini directly, so no Hugging Face paid endpoint
+is required for the chatbot UI.
 
 Required secrets:
 
 ```toml
-HF_ENDPOINT_URL = "https://your-huggingface-endpoint-url"
-HF_TOKEN = "hf_your_token_here"
+GEMINI_API_KEY = "your_gemini_api_key_here"
+GEMINI_MODEL = "gemini-2.0-flash"
 ```
 
 ## Run Streamlit Locally
@@ -72,13 +72,13 @@ streamlit run app.py
 ```
 
 You can provide secrets through `.streamlit/secrets.toml` locally or environment
-variables named `HF_ENDPOINT_URL` and `HF_TOKEN`.
+variables named `GEMINI_API_KEY` and `GEMINI_MODEL`.
 
 ## Streamlit Community Cloud
 
 1. Push this repo to GitHub.
 2. Create a Streamlit Community Cloud app pointing to `app.py`.
-3. Add `HF_ENDPOINT_URL` and `HF_TOKEN` in app secrets.
+3. Add `GEMINI_API_KEY` and optional `GEMINI_MODEL` in app secrets.
 4. Deploy.
 
 ## Medical Safety

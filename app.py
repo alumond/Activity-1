@@ -1,14 +1,13 @@
-"""Streamlit chatbot UI for an externally hosted AfriMedQA Llama endpoint."""
+"""Streamlit chatbot UI backed by the Gemini API."""
 
 from __future__ import annotations
 
 import os
-from typing import Any
-
 import requests
 import streamlit as st
 
 
+DEFAULT_MODEL = "gemini-2.0-flash"
 DEFAULT_SYSTEM_PROMPT = (
     "You are an expert African health AI. Answer medical questions concisely, "
     "accurately, and with appropriate caution for African healthcare contexts. "
@@ -31,69 +30,71 @@ def build_prompt(messages: list[dict[str, str]], system_prompt: str) -> str:
     return "\n\n".join(prompt_parts)
 
 
-def call_hugging_face_endpoint(
+def call_gemini(
     *,
-    endpoint_url: str,
-    hf_token: str,
+    api_key: str,
+    model: str,
     prompt: str,
-    max_new_tokens: int,
+    max_output_tokens: int,
     temperature: float,
     top_p: float,
 ) -> str:
-    headers = {
-        "Authorization": f"Bearer {hf_token}",
-        "Content-Type": "application/json",
-    }
-    payload: dict[str, Any] = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": max_new_tokens,
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    payload = {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": prompt}],
+            }
+        ],
+        "generationConfig": {
+            "maxOutputTokens": max_output_tokens,
             "temperature": temperature,
-            "top_p": top_p,
-            "return_full_text": False,
+            "topP": top_p,
         },
     }
 
-    response = requests.post(endpoint_url, headers=headers, json=payload, timeout=120)
+    response = requests.post(url, params={"key": api_key}, json=payload, timeout=120)
     response.raise_for_status()
     data = response.json()
 
-    if isinstance(data, list) and data:
-        first = data[0]
-        if isinstance(first, dict):
-            return first.get("generated_text", "").strip()
-    if isinstance(data, dict):
-        if "generated_text" in data:
-            return str(data["generated_text"]).strip()
-        if "error" in data:
-            raise RuntimeError(str(data["error"]))
-    return str(data).strip()
+    candidates = data.get("candidates", [])
+    if not candidates:
+        feedback = data.get("promptFeedback", {})
+        raise RuntimeError(f"Gemini returned no candidates. Feedback: {feedback}")
+
+    parts = candidates[0].get("content", {}).get("parts", [])
+    text_parts = [part.get("text", "") for part in parts if part.get("text")]
+    if not text_parts:
+        raise RuntimeError("Gemini returned a response without text.")
+    return "\n".join(text_parts).strip()
 
 
 def main() -> None:
     st.set_page_config(page_title="AfriMedQA Chatbot", layout="centered")
     st.title("AfriMedQA Clinical Chatbot")
-    st.caption("Fine-tuned Llama 3.2 interface for African healthcare Q&A.")
+    st.caption("Gemini-powered interface for African healthcare Q&A.")
 
     st.warning(
         "This chatbot is for demonstration and decision-support testing only. "
         "It is not a substitute for clinical judgement, emergency care, or local treatment guidelines.",
     )
 
-    endpoint_url = get_secret("HF_ENDPOINT_URL")
-    hf_token = get_secret("HF_TOKEN")
+    gemini_api_key = get_secret("GEMINI_API_KEY")
+    gemini_model = get_secret("GEMINI_MODEL", DEFAULT_MODEL)
 
     with st.sidebar:
         st.header("Generation")
-        max_new_tokens = st.slider("Max new tokens", min_value=64, max_value=1024, value=384, step=64)
+        st.text_input("Model", value=gemini_model, disabled=True)
+        max_output_tokens = st.slider("Max output tokens", min_value=64, max_value=2048, value=512, step=64)
         temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, value=0.3, step=0.05)
         top_p = st.slider("Top-p", min_value=0.1, max_value=1.0, value=0.9, step=0.05)
         system_prompt = st.text_area("System prompt", value=DEFAULT_SYSTEM_PROMPT, height=180)
 
-    if not endpoint_url or not hf_token:
+    if not gemini_api_key:
         st.error(
-            "Missing Hugging Face configuration. Add HF_ENDPOINT_URL and HF_TOKEN "
-            "to Streamlit secrets or environment variables."
+            "Missing Gemini configuration. Add GEMINI_API_KEY to Streamlit "
+            "secrets or environment variables."
         )
         st.stop()
 
@@ -116,16 +117,16 @@ def main() -> None:
     with st.chat_message("assistant"):
         with st.spinner("Generating response..."):
             try:
-                answer = call_hugging_face_endpoint(
-                    endpoint_url=endpoint_url,
-                    hf_token=hf_token,
+                answer = call_gemini(
+                    api_key=gemini_api_key,
+                    model=gemini_model,
                     prompt=prompt,
-                    max_new_tokens=max_new_tokens,
+                    max_output_tokens=max_output_tokens,
                     temperature=temperature,
                     top_p=top_p,
                 )
             except Exception as exc:
-                answer = f"Endpoint request failed: {exc}"
+                answer = f"Gemini request failed: {exc}"
                 st.error(answer)
             else:
                 st.markdown(answer)
