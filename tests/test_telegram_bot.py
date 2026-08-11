@@ -2,7 +2,13 @@ import os
 import unittest
 from unittest.mock import patch
 
-from api.telegram import get_chat_id_and_text, required_config_present, split_telegram_message, webhook_registration_url
+from api.telegram import (
+    format_for_telegram,
+    get_chat_id_and_text,
+    required_config_present,
+    split_telegram_message,
+    webhook_registration_url,
+)
 from gemini_client import build_prompt
 
 
@@ -51,6 +57,17 @@ class TelegramBotTests(unittest.TestCase):
         }
         with patch.dict(os.environ, fake_env, clear=True):
             self.assertTrue(required_config_present())
+
+    def test_formats_common_markdown_for_telegram_html(self):
+        formatted = format_for_telegram("**Urgency Level:** urgent\n* Go to a clinic\n- Avoid self-medication")
+        self.assertIn("<b>Urgency Level:</b> urgent", formatted)
+        self.assertIn("• Go to a clinic", formatted)
+        self.assertIn("• Avoid self-medication", formatted)
+        self.assertNotIn("**", formatted)
+
+    def test_escapes_telegram_html(self):
+        formatted = format_for_telegram("Use <test> & check **now**")
+        self.assertEqual(formatted, "Use &lt;test&gt; &amp; check <b>now</b>")
 
 
 if __name__ == "__main__":

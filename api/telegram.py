@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
@@ -72,18 +73,50 @@ def telegram_api_url(token: str, method: str) -> str:
 
 
 def send_telegram_message(token: str, chat_id: int, text: str) -> None:
-    chunks = split_telegram_message(text)
+    formatted_text = format_for_telegram(text)
+    chunks = split_telegram_message(formatted_text)
     for chunk in chunks:
         response = requests.post(
             telegram_api_url(token, "sendMessage"),
             json={
                 "chat_id": chat_id,
                 "text": chunk,
+                "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             },
             timeout=30,
         )
         response.raise_for_status()
+
+
+def escape_telegram_html(text: str) -> str:
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+
+
+def format_inline_markdown(text: str) -> str:
+    escaped = escape_telegram_html(text)
+    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", escaped)
+
+
+def format_for_telegram(text: str) -> str:
+    lines = []
+    for raw_line in text.strip().splitlines():
+        stripped = raw_line.strip()
+        if not stripped:
+            lines.append("")
+            continue
+
+        bullet_match = re.match(r"^[-*]\s+(.+)$", stripped)
+        if bullet_match:
+            lines.append(f"• {format_inline_markdown(bullet_match.group(1))}")
+            continue
+
+        lines.append(format_inline_markdown(stripped))
+    return "\n".join(lines).strip()
 
 
 def split_telegram_message(text: str, limit: int = 3900) -> list[str]:
