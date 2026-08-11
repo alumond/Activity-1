@@ -1,2 +1,11 @@
+[project]
+name = "afrimedqa-telegram"
+version = "0.1.0"
+description = "Telegram webhook for AfriMedQA Gemini assistant"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.32.0",
+]
+
 [tool.vercel]
 entrypoint = "api.telegram:handler"
