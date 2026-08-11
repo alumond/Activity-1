@@ -1,0 +1,4 @@
+.pycache/
+__pycache__/
+outputs/
+.streamlit/secrets.toml
