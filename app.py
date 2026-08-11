@@ -8,6 +8,10 @@ import streamlit as st
 
 
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
+FOCUSED_MAX_OUTPUT_TOKENS = 512
+DETAILED_MAX_OUTPUT_TOKENS = 900
+TEMPERATURE = 0.25
+TOP_P = 0.9
 DEFAULT_SYSTEM_PROMPT = (
     "You are AfriMedQA, a careful clinical guidance assistant for African "
     "healthcare contexts. Give practical, plain-language guidance. Start with "
@@ -283,18 +287,12 @@ def main() -> None:
         st.session_state.pending_prompt = None
 
     with st.sidebar:
-        st.header("Settings")
-        st.text_input("Model", value=gemini_model, disabled=True)
+        st.header("Conversation")
         response_depth = st.radio(
             "Response depth",
             ["Focused", "Detailed"],
             horizontal=True,
         )
-        default_tokens = 512 if response_depth == "Focused" else 900
-        max_output_tokens = st.slider("Output length", min_value=128, max_value=2048, value=default_tokens, step=64)
-        temperature = st.slider("Creativity", min_value=0.0, max_value=1.0, value=0.25, step=0.05)
-        top_p = st.slider("Sampling range", min_value=0.1, max_value=1.0, value=0.9, step=0.05)
-        system_prompt = st.text_area("Clinical instruction", value=DEFAULT_SYSTEM_PROMPT, height=210)
         st.download_button(
             "Download transcript",
             data=format_transcript(st.session_state.messages),
@@ -336,8 +334,8 @@ def main() -> None:
     st.markdown(
         f"""
         <div class="metric-row">
-            <div class="metric"><span>Model</span><strong>{gemini_model}</strong></div>
-            <div class="metric"><span>Depth</span><strong>{response_depth}</strong></div>
+            <div class="metric"><span>Mode</span><strong>Clinical guidance</strong></div>
+            <div class="metric"><span>Response</span><strong>{response_depth}</strong></div>
             <div class="metric"><span>Safety</span><strong>Urgent symptoms flagged</strong></div>
         </div>
         """,
@@ -373,7 +371,8 @@ def main() -> None:
         if response_depth == "Focused"
         else "Use a fuller response with short sections and practical detail."
     )
-    effective_system_prompt = f"{system_prompt.strip()}\n\n{depth_instruction}"
+    max_output_tokens = FOCUSED_MAX_OUTPUT_TOKENS if response_depth == "Focused" else DETAILED_MAX_OUTPUT_TOKENS
+    effective_system_prompt = f"{DEFAULT_SYSTEM_PROMPT}\n\n{depth_instruction}"
     prompt = build_prompt(st.session_state.messages, effective_system_prompt)
     with st.chat_message("assistant"):
         with st.spinner("Generating response..."):
@@ -383,8 +382,8 @@ def main() -> None:
                     model=gemini_model,
                     prompt=prompt,
                     max_output_tokens=max_output_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
+                    temperature=TEMPERATURE,
+                    top_p=TOP_P,
                 )
             except Exception as exc:
                 answer = f"Gemini request failed: {exc}"
