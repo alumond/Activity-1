@@ -59,11 +59,13 @@ class TelegramBotTests(unittest.TestCase):
             self.assertTrue(required_config_present())
 
     def test_formats_common_markdown_for_telegram_html(self):
-        formatted = format_for_telegram("**Urgency Level:** urgent\n* Go to a clinic\n- Avoid self-medication")
+        formatted = format_for_telegram("### What to do\n**Urgency Level:** urgent\n* Go to a clinic\n- Avoid self-medication")
+        self.assertIn("<b>What to do</b>", formatted)
         self.assertIn("<b>Urgency Level:</b> urgent", formatted)
         self.assertIn("• Go to a clinic", formatted)
         self.assertIn("• Avoid self-medication", formatted)
         self.assertNotIn("**", formatted)
+        self.assertNotIn("###", formatted)
 
     def test_escapes_telegram_html(self):
         formatted = format_for_telegram("Use <test> & check **now**")

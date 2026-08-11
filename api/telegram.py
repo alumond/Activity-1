@@ -110,6 +110,11 @@ def format_for_telegram(text: str) -> str:
             lines.append("")
             continue
 
+        heading_match = re.match(r"^#{1,6}\s+(.+)$", stripped)
+        if heading_match:
+            lines.append(f"<b>{format_inline_markdown(heading_match.group(1))}</b>")
+            continue
+
         bullet_match = re.match(r"^[-*]\s+(.+)$", stripped)
         if bullet_match:
             lines.append(f"• {format_inline_markdown(bullet_match.group(1))}")
@@ -228,6 +233,16 @@ def handle_text_message(chat_id: int, text: str) -> str:
     model = env("GEMINI_MODEL", DEFAULT_MODEL) or DEFAULT_MODEL
     history = load_history(chat_id)
     messages = history + [{"role": "user", "content": text}]
+    messages.insert(
+        0,
+        {
+            "role": "user",
+            "content": (
+                "For Telegram formatting, do not use Markdown heading markers like ###. "
+                "Use short plain headings and bullets only."
+            ),
+        },
+    )
     answer = build_clinical_response(
         messages=messages,
         api_key=gemini_api_key,
