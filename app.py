@@ -7,7 +7,7 @@ import requests
 import streamlit as st
 
 
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
 DEFAULT_SYSTEM_PROMPT = (
     "You are an expert African health AI. Answer medical questions concisely, "
     "accurately, and with appropriate caution for African healthcare contexts. "
@@ -40,6 +40,10 @@ def call_gemini(
     top_p: float,
 ) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": api_key,
+    }
     payload = {
         "contents": [
             {
@@ -54,8 +58,17 @@ def call_gemini(
         },
     }
 
-    response = requests.post(url, params={"key": api_key}, json=payload, timeout=120)
-    response.raise_for_status()
+    response = requests.post(url, headers=headers, json=payload, timeout=120)
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:
+        detail = response.text[:500] if response.text else str(exc)
+        if response.status_code == 404:
+            raise RuntimeError(
+                f"Model '{model}' was not found or is not available for this API key. "
+                "Try setting GEMINI_MODEL to gemini-3.5-flash-lite or gemini-3.5-flash."
+            ) from exc
+        raise RuntimeError(f"Gemini API returned HTTP {response.status_code}: {detail}") from exc
     data = response.json()
 
     candidates = data.get("candidates", [])
