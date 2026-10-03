@@ -1,7 +1,7 @@
 [project]
 name = "afrimedqa-telegram"
 version = "0.1.0"
-description = "Telegram webhook for AfriMedQA Gemini assistant"
+description = "Telegram webhook for the Health for All Gemini assistant"
 requires-python = ">=3.11"
 dependencies = [
     "requests>=2.32.0",

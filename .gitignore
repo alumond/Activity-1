@@ -3,3 +3,4 @@ __pycache__/
 outputs/
 .streamlit/secrets.toml
 .vercel/
+streamlit_memory.json

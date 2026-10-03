@@ -1,4 +1,4 @@
-"""Shared Gemini helpers for AfriMedQA channels."""
+"""Shared Gemini helpers for Health for All channels."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import requests
 
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
 DEFAULT_SYSTEM_PROMPT = (
-    "You are AfriMedQA, a careful clinical guidance assistant for African "
+    "You are Health for All, a careful clinical guidance assistant for African "
     "healthcare contexts. Give practical, plain-language guidance. Start with "
     "the likely urgency level when symptoms may be serious. Include what the "
     "user should do now, what to avoid, and which warning signs require urgent "

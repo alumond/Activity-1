@@ -1,4 +1,4 @@
-"""Telegram webhook for AfriMedQA, designed for Vercel Python Functions."""
+"""Telegram webhook for Health for All, designed for Vercel Python Functions."""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from gemini_client import DEFAULT_MODEL, build_clinical_response  # noqa: E402
 MAX_HISTORY_MESSAGES = 8
 HISTORY_TTL_SECONDS = 60 * 60 * 24 * 7
 WELCOME_MESSAGE = (
-    "Welcome to AfriMedQA. Send symptoms, duration, age, and location if relevant. "
+    "Welcome to Health for All. Send symptoms, duration, age, and location if relevant. "
     "If this is an emergency, seek urgent medical care immediately."
 )
 UNSUPPORTED_MESSAGE = "Please send a text message describing the health question or symptoms."

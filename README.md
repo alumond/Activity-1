@@ -1,11 +1,11 @@
-# AfriMedQA Llama Fine-Tuning Pipeline
+# Health for All Llama Fine-Tuning Pipeline
 
 This project turns the original Colab notebook export into a Colab-first QLoRA
 fine-tuning pipeline and a Streamlit chatbot UI backed by the Gemini API.
 
 ## What This Contains
 
-- `finetune_llm.py`: training and data-preview pipeline for AfriMedQA.
+- `finetune_llm.py`: training and data-preview pipeline for Health for All.
 - `app.py`: Streamlit chatbot that calls Gemini API.
 - `api/telegram.py`: separate Telegram webhook for Vercel.
 - `gemini_client.py`: shared Gemini prompt and API helper used by the Telegram bot.
